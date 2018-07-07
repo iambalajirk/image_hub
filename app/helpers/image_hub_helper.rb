@@ -1,0 +1,2 @@
+module ImageHubHelper
+end

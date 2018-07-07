@@ -1,0 +1,2 @@
+module ApiApplicationHelper
+end
