@@ -11,17 +11,11 @@ class ImageHubController < ApiApplicationController
   include StorageConcern
 
   def create
-  	image_id = create_image
-    json_response( image_create_response(image_id) , :created)
+  	response = create_image
+    json_response(response, :created)
   rescue => e
   	Rails.logger.error "Error while creating a new image, error :#{e}"
   	json_response( {error: 'Something went wrong'}, :internal_server_error)
-  end
-
-  private
-
-  def image_create_response image_id
-  	{ image_id: image_id, directory_id: parent_directory_id }
   end
 
 end

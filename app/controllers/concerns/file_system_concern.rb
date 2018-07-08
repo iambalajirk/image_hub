@@ -33,7 +33,7 @@ module FileSystemConcern
 
 			return nil if meta.nil?
 
-			data ={id: image_id}
+			data = {id: image_id, url: "#{IMAGE_LINK}/#{image_id}"}
 			data.merge!(JSON.parse(meta).symbolize_keys)
 		end.compact
 	end
@@ -49,7 +49,7 @@ module FileSystemConcern
 
 			return nil if meta.nil?
 
-			data = {id: id}
+			data = {id: id,  url: "#{DIRECTORY_LINK}/#{id}"}
 			data.merge!(JSON.parse(meta).symbolize_keys)
 		end.compact
 	end
@@ -83,7 +83,7 @@ module FileSystemConcern
 		set_value(key, meta.to_json)
 	end
 
-	def store_directory_meta directory_id, meta
+	def store_directory_meta user_id, directory_id, meta
 		key = directory_metadata_key(user_id, directory_id)
 
 		Rails.logger.debug "**storage** **add** **metadata** storing directory meta data in redis, key: #{key}"
@@ -97,6 +97,15 @@ module FileSystemConcern
 		Rails.logger.debug "**storage** **add** **image** storing image #{image_id} references inside directory, key: #{list}"
 		add_to_set(set, image_id) # To search in O(1).
 		add_to_list(list, image_id) # To get all the values in the sorted order.
+	end
+
+	def store_directory_ref_to_directory user_id, directory_id, new_directory_id
+		set = directory_reference_inside_directory_key_set(user_id, directory_id)
+		list = directory_reference_inside_directory_key_list(user_id, directory_id)
+
+		Rails.logger.debug "**storage** **add** **directory** storing directory #{new_directory_id} references inside directory, key: #{list}"
+		add_to_set(set, new_directory_id) # To search in O(1).
+		add_to_list(list, new_directory_id) # To get all the values in the sorted order.
 	end
 
 	def remove_image_meta user_id, file_id
@@ -115,7 +124,13 @@ module FileSystemConcern
 		remove_from_list(list, image_id)
 	end
 
-	def create_file final_dir, file_hash
+	def remove_directory_ref_from_directory user_id, directory_id, new_directory_id
+		set = directory_reference_inside_directory_key_set(user_id, directory_id)
+		list = directory_reference_inside_directory_key_list(user_id, directory_id)
+
+		Rails.logger.debug "**storage** **remove** **image**  image #{new_directory_id} references inside directory, key: #{list}"
+		remove_from_set(set, new_directory_id)
+		remove_from_list(list, new_directory_id)
 	end
 
 	def get_directory_path image_id

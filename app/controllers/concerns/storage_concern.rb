@@ -17,8 +17,37 @@ module StorageConcern
 		end
 	end
 
+	def check_directory_presence
+		handle_exception do
+			directory_key = directory_image_id(user_id, directory_id, new_directory_name)
+			directory_id = generate_hash(directory_key)
+
+			meta = get_directory_meta(user_id, directory_id)
+
+			json_response({:error => ErrorMessages[:image_exists]}, :conflict) and return if meta.present?
+			true
+		end
+	end
+
+	def create_directory
+		directory_key = directory_image_id(user_id, directory_id, new_directory_name)
+		new_directory_id = generate_hash(directory_key)
+
+		directory_meta = populate_directory_metadata
+
+		store_directory_meta(user_id, new_directory_id, directory_meta)
+		store_directory_ref_to_directory(user_id, directory_id, new_directory_id)
+
+		{id: new_directory_id}.merge!(directory_meta)
+	rescue => error
+		# Remove the stored metadata if there are any errors. So, there won't be any absurd behaviours.
+		remove_directory_meta(user_id, new_directory_id)
+		remove_directory_ref_from_directory(user_id, directory_id, new_directory_id)
+
+		raise error
+	end
+
 	def create_image
-		byebug
 		# generating the unique hash. Store this as an instance attribute in check_image_presence, we can avoid this step.
 		image_key = image_unique_id(user_id, parent_directory_id, file_name)
 		image_id = generate_hash(image_key)
@@ -30,7 +59,7 @@ module StorageConcern
 		store_image_ref_to_directory(user_id, parent_directory_id, image_id) # This is a virtual reference.
 		store_image(directory, image_id, image)
 
-		image_id
+		{ id: image_id, directory_id: parent_directory_id, name: file_name}
 	rescue => error
 		# Remove the stored metadata if there are any errors. So, there won't be any absurd behaviours.
 		remove_image_meta(user_id, image_id)
@@ -53,6 +82,10 @@ module StorageConcern
 		"%{user_id}/%{parent_directory_id}/%{file_name}" % {user_id: user_id, parent_directory_id: parent_directory_id, file_name: file_name}
 	end
 
+	def directory_image_id user_id, parent_directory_id, directory_name
+		"%{user_id}/%{parent_directory_id}/%{directory_name}" % {user_id: user_id, parent_directory_id: parent_directory_id, directory_name: directory_name}
+	end
+
 	def generate_hash keys
 		Digest::MD5.hexdigest keys
 	end
@@ -70,11 +103,11 @@ module StorageConcern
 		}
 	end
 
-	def populate_directory_metadata level
+	def populate_directory_metadata 
 		{
-			name: directory_name,
-			parent_directory_id: parent_directory_id,
-			level: level 
+			name: new_directory_name,
+			parent_directory_id: directory_id,
+			level: level + 1
 		}
 	end
 

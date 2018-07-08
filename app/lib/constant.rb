@@ -4,4 +4,6 @@ module Constant
 	GLOBAL_REDIS_PREFIX = 'IMAGE_HUB'.freeze
 	URL_PATH_PREFIX = '/images'.freeze
 	DIRECTORY_URL_PATH_PREFIX = '/directory'.freeze
+	IMAGE_LINK = 'https://localhost:3000/images'.freeze
+	DIRECTORY_LINK = 'https://localhost:3000/directory'.freeze
 end
