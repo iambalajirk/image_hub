@@ -37,6 +37,8 @@ gem 'fastimage', '~> 2.1.3'
 
 gem "rubocop", "0.52.1"
 
+gem "redis","3.3.1"
+
 # Reduces boot times through caching; required in config/boot.rb
 gem 'bootsnap', '>= 1.1.0', require: false
 

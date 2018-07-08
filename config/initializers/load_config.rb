@@ -1,0 +1,1 @@
+ErrorMessages = YAML::load_file(File.join(Rails.root, 'config', 'error_messages.yml')).symbolize_keys

@@ -6,8 +6,13 @@ application up and running.
 Things you may want to cover:
 
 * Ruby version
+5 and above.
+
+* Ruby version
+3.2 and above.
 
 * System dependencies
+Need to have redis and memcached installed.
 
 * Configuration
 
