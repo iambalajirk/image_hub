@@ -9,24 +9,6 @@ module FileSystemConcern
 		get_value(key)
 	end
 
-	# def find_root_directory user_id, directories
-	# 	current_directory_id = directories.first
-
-	# 	directories.each_with_index do |directory_id, index|
-	# 		response = find_folder_in_current_directory(user_id, current_directory_id, directory_id)
-	# 		return false unless response
-	# 		current_directory_id = directory_id
-	# 	end
-
-	# 	current_directory_id
-	# end
-
-	# def find_folder_in_current_directory(user_id, current_directory_id, directory_id)
-	# 	key = directory_images_key(user_id, current_directory_id)
-	# 	is_member?(key, directory_id)
-	# 	# $redis.perform_redis_op("sismember", key, directory_id)
-	# end
-
 	def store_image directory, file_name, data
 		create_physical_directory(directory)
 		create_image_in_directory(directory, file_name, data)
@@ -38,6 +20,38 @@ module FileSystemConcern
 		unless File.directory?(directory)
   		FileUtils.mkdir_p(directory)
 		end
+	end
+
+	def get_all_image_metas_in_directory user_id, directory_id
+		key = image_reference_inside_directory_key_list(user_id, directory_id)
+		image_ids = get_all_from_list(key)
+
+		# Getting individual metadata form an array and returning.
+		image_ids.map do |image_id|
+			key = images_metadata_key(user_id, image_id)
+			meta = get_value(key)
+
+			return nil if meta.nil?
+
+			data ={id: image_id}
+			data.merge!(JSON.parse(meta).symbolize_keys)
+		end.compact
+	end
+
+	def get_all_directory_metas_in_directory user_id, directory_id
+		key = directory_reference_inside_directory_key_list(user_id, directory_id)
+		directory_ids = get_all_from_list(key)
+
+		# Getting individual metadata form an array and returning.
+		directory_ids.map do |id|
+			key = directory_metadata_key(user_id, id)
+			meta = get_value(key)
+
+			return nil if meta.nil?
+
+			data = {id: id}
+			data.merge!(JSON.parse(meta).symbolize_keys)
+		end.compact
 	end
 
 	def create_image_in_directory directory, file_name, data
@@ -52,14 +66,14 @@ module FileSystemConcern
 		key = images_metadata_key(user_id, image_id)
 		meta = get_value(key)
 
-		meta.nil? ? meta : JSON.parse(meta).stringify_keys
+		meta.nil? ? meta : JSON.parse(meta).symbolize_keys
 	end
 
 	def get_directory_meta user_id, directory_id
 		key = directory_metadata_key(user_id, directory_id)
 		meta = get_value(key)
 
-		meta.nil? ? meta : JSON.parse(meta).stringify_keys
+		meta.nil? ? meta : JSON.parse(meta).symbolize_keys
 	end
 
 	def store_image_meta user_id, image_id, meta
@@ -77,11 +91,12 @@ module FileSystemConcern
 	end
 
 	def store_image_ref_to_directory user_id, directory_id, image_id
-		key = image_reference_inside_directory_key(user_id, directory_id)
+		set = image_reference_inside_directory_key_set(user_id, directory_id)
+		list = image_reference_inside_directory_key_list(user_id, directory_id)
 
-		Rails.logger.debug "**storage** **add** **image** storing image #{image_id} references inside directory, key: #{key}"
-		add_to_set(key, image_id) # To search in O(1).
-		add_to_list(key, image_id) # To get all the values in the sorted order.
+		Rails.logger.debug "**storage** **add** **image** storing image #{image_id} references inside directory, key: #{list}"
+		add_to_set(set, image_id) # To search in O(1).
+		add_to_list(list, image_id) # To get all the values in the sorted order.
 	end
 
 	def remove_image_meta user_id, file_id
@@ -92,11 +107,12 @@ module FileSystemConcern
 	end
 
 	def remove_image_ref_from_directory user_id, directory_id, image_id
-		key = image_reference_inside_directory_key(user_id, directory_id)
+		set = image_reference_inside_directory_key_set(user_id, directory_id)
+		list = image_reference_inside_directory_key_list(user_id, directory_id)
 
-		Rails.logger.debug "**storage** **remove** **image**  image #{image_id} references inside directory, key: #{key}"
-		remove_from_set(key, image_id)
-		remove_from_list(key, image_id)
+		Rails.logger.debug "**storage** **remove** **image**  image #{image_id} references inside directory, key: #{list}"
+		remove_from_set(set, image_id)
+		remove_from_list(list, image_id)
 	end
 
 	def create_file final_dir, file_hash

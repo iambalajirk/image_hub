@@ -12,7 +12,6 @@ class ImageHubController < ApiApplicationController
 
   def create
   	image_id = create_image
-  	byebug
     json_response( image_create_response(image_id) , :created)
   rescue => e
   	Rails.logger.error "Error while creating a new image, error :#{e}"

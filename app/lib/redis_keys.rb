@@ -1,12 +1,20 @@
 module RedisKeys
 	include Constant
 
-	def image_reference_inside_directory_key user_id, image_id
-		"#{GLOBAL_REDIS_PREFIX}:%{user_id}:IMAGES:%{image_id}" % {user_id: user_id, image_id: image_id}
+	def image_reference_inside_directory_key_set user_id, directory_id
+		"#{GLOBAL_REDIS_PREFIX}:%{user_id}:IMAGES:SET:%{directory_id}" % {user_id: user_id, directory_id: directory_id}
 	end
 
-	def directory_reference_inside_directory_key user_id, directory_id
-		"#{GLOBAL_REDIS_PREFIX}:%{user_id}:DIRECTORY:%{directory_id}" % {user_id: user_id, directory_id: directory_id}
+	def directory_reference_inside_directory_key_set user_id, directory_id
+		"#{GLOBAL_REDIS_PREFIX}:%{user_id}:DIRECTORY:SET:%{directory_id}" % {user_id: user_id, directory_id: directory_id}
+	end
+
+	def image_reference_inside_directory_key_list user_id, directory_id
+		"#{GLOBAL_REDIS_PREFIX}:%{user_id}:IMAGES:LIST:%{directory_id}" % {user_id: user_id, directory_id: directory_id}
+	end
+
+	def directory_reference_inside_directory_key_list user_id, directory_id
+		"#{GLOBAL_REDIS_PREFIX}:%{user_id}:DIRECTORY:LIST:%{directory_id}" % {user_id: user_id, directory_id: directory_id}
 	end
 
 	def images_metadata_key user_id, image_id
@@ -47,6 +55,10 @@ module RedisKeys
 
 	def remove_from_list key, val, all=0
 		$redis.perform_redis_op("lrem", key, all, val)
+	end
+
+	def get_all_from_list key, start=0, stop=-1
+		$redis.perform_redis_op("lrange", key, start, stop)
 	end
 
 end

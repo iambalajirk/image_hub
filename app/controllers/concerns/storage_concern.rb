@@ -2,11 +2,9 @@
 # We can replace the local store with the S3 upload if we want to.
 module StorageConcern
 	include Constant
-	
 
 	def check_image_presence
 		handle_exception do
-			byebug
 			image_key = image_unique_id(user_id, parent_directory_id, file_name)
 			image_id = generate_hash(image_key)
 
@@ -35,11 +33,18 @@ module StorageConcern
 		image_id
 	rescue => error
 		# Remove the stored metadata if there are any errors. So, there won't be any absurd behaviours.
-		byebug
 		remove_image_meta(user_id, image_id)
 		remove_image_ref_from_directory(user_id, parent_directory_id, image_id)
 
 		raise error
+	end
+
+	def load_directory_contents
+		handle_exception do
+			@images = get_all_image_metas_in_directory(user_id, directory_id)
+			@directories = get_all_directory_metas_in_directory(user_id, directory_id)
+		end
+		true
 	end
 
 	private

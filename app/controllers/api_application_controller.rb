@@ -2,7 +2,8 @@
 
 class ApiApplicationController < ApplicationController
   skip_before_action :verify_authenticity_token
-  before_action :load_user, :parse_body, :parse_api_params, only: :create
+  before_action :parse_body, :parse_api_params, only: :create
+  before_action :load_user
 
   attr_accessor :body, :per_page, :page, :user_id
 
@@ -23,7 +24,6 @@ class ApiApplicationController < ApplicationController
     begin
       yield
     rescue Exception => e
-      byebug
       Rails.logger.error "Error, e :#{e}"
       json_response({:error => ErrorMessages[:something_wrong]}, :internal_server_error) and return
     end

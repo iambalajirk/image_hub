@@ -4,5 +4,8 @@ Rails.application.routes.draw do
   resources :images, :controller => :image_hub, :except => [:new, :edit] do
   end
 
+  resources :directory, :controller => :directory, :except => [:new, :edit] do
+  end
+
   resources :files, :only => [:destroy, :show]
 end
