@@ -5,8 +5,8 @@ module StorageConcern
 
 	def check_image_presence
 		handle_exception do
-			image_key = image_unique_id(user_id, parent_directory_id, file_name)
-			image_id = generate_hash(image_key)
+			image_key = image_unique_id(user_id, directory_id, file_name)
+			@image_id = generate_hash(image_key)
 
 			meta = get_image_meta(user_id, image_id)
 
@@ -48,22 +48,19 @@ module StorageConcern
 	end
 
 	def create_image
-		# generating the unique hash. Store this as an instance attribute in check_image_presence, we can avoid this step.
-		image_key = image_unique_id(user_id, parent_directory_id, file_name)
-		image_id = generate_hash(image_key)
-	 	
 	 	# final directory path where image is going to reside.
 		directory = get_directory_path(image_id)
+
 		# Store the image, directory reference and the meta information.
 		store_image_meta(user_id, image_id, populate_image_metadata)
-		store_image_ref_to_directory(user_id, parent_directory_id, image_id) # This is a virtual reference.
+		store_image_ref_to_directory(user_id, directory_id, image_id) # This is a virtual reference.
 		store_image(directory, image_id, image)
 
-		{ id: image_id, directory_id: parent_directory_id, name: file_name}
+		{ id: image_id, directory_id: directory_id, name: file_name}
 	rescue => error
 		# Remove the stored metadata if there are any errors. So, there won't be any absurd behaviours.
 		remove_image_meta(user_id, image_id)
-		remove_image_ref_from_directory(user_id, parent_directory_id, image_id)
+		remove_image_ref_from_directory(user_id, directory_id, image_id)
 
 		raise error
 	end
@@ -78,8 +75,8 @@ module StorageConcern
 
 	private
 
-	def image_unique_id user_id, parent_directory_id, file_name
-		"%{user_id}/%{parent_directory_id}/%{file_name}" % {user_id: user_id, parent_directory_id: parent_directory_id, file_name: file_name}
+	def image_unique_id user_id, directory_id, file_name
+		"%{user_id}/%{directory_id}/%{file_name}" % {user_id: user_id, directory_id: directory_id, file_name: file_name}
 	end
 
 	def directory_image_id user_id, parent_directory_id, directory_name
@@ -98,8 +95,9 @@ module StorageConcern
 		{
 			extension: extension,
 			name: file_name,
-			dimension: dimension,
-			directory_id: parent_directory_id
+			width: width,
+			height: height,
+			directory_id: directory_id
 		}
 	end
 

@@ -14,6 +14,33 @@ module FileSystemConcern
 		create_image_in_directory(directory, file_name, data)
 	end
 
+	def load_image
+		handle_exception do 
+			base_64_file = ""
+			path = "#{get_directory_path(image_id)}#{image_id}"
+
+			f = File.open(path, "r")
+			f.each_line do |line|
+				base_64_file.concat(line)
+			end
+			f.close
+
+			@image = Base64.decode64(base_64_file)
+		end
+	end
+
+	def load_image_meta
+		handle_exception do
+			byebug
+			meta = get_image_meta(user_id, image_id)
+			json_response({error: ErrorMessages[:image_not_present]}) and return if meta.nil?
+
+			@extension = meta[:extension]
+			@file_name = meta[:name]
+			@file_path = "#{get_directory_path(image_id)}#{image_id}"
+		end
+	end
+
 	# This is the directory in the file system where the image is going to recide.
 	def create_physical_directory directory
 		# Use file Utils and create the directory.
@@ -55,11 +82,16 @@ module FileSystemConcern
 	end
 
 	def create_image_in_directory directory, file_name, data
-		# Open the file stream and write the data.
-		Dir.chdir(directory)
-		f = File.open(file_name, "w")
-		f.write(data)
+		# Todo: Use the absolute file path rather than changing the directory.
+		# Dir.chdir(directory)
+		byebug
+		file = Base64.encode64(data)
+
+		f = File.open("#{directory}#{file_name}", "w")
+		f.write(file)
 		f.close
+
+		# Dir.chdir("#{Rails.root}")
 	end
 
 	def get_image_meta user_id, image_id

@@ -11,34 +11,43 @@ module ImageConcern
   # recursively check for the folders if the end folder exists or not. Throw error if so.
   # The root directory ID will be by default the user_id.
   def load_image_configs
-    handle_exception do 
-      @image = body[:image]
-      @file_name = body[:name]
-      @parent_directory_id = params[:_directory_id] == "me" ? user_id : params[:_directory_id]
+    handle_exception do
+      byebug
+      @image = request.raw_post
+      @file_name = parse_file_name
+      @extension = parse_extension
 
-      width, height = FastImage.size(image)
-      @dimension = { width: width, height: height }
-      @extension = file_name.split(".")[1]
+      if params[:directory_id].blank? || image.blank? || file_name.blank? || extension.blank?
+        json_response({ error: ErrorMessages[:invalid_create_image_request] }, :not_acceptable) && return
+      end
+
+      @directory_id = params[:directory_id] == "me" ? user_id : params[:directory_id]
+      @width, @height = get_dimensions
     end
   end
 
-  def check_image_validity
+  def verify_image
     handle_exception do
       json_response({ error: ErrorMessages[:invalid_image] }, :not_acceptable) && return unless valid_image
     end
   end
 
-  def validate_request?
-    handle_exception do
-      json_response({ error: ErrorMessages[:directory_not_present] }, :not_acceptable) && return if params[:_directory_id].blank? 
-      json_response({ error: ErrorMessages[:invalid_create_image_request] }, :not_acceptable) && return if body[:image].blank? || body[:name].blank?
-    end
+  private
+
+  def parse_file_name
+    request.headers['Content-Name']
   end
 
-  private
-  
+  def parse_extension
+    request.headers['Content-Type']
+  end
+
+  def get_dimensions
+    image[0x10..0x18].unpack('NN')
+  end
+
   def valid_image
-    dimension[:width] >= MIN_WIDTH && dimension[:width] <= MAX_WIDTH && dimension[:height] >= MIN_HEIGHT && dimension[:height] <= MAX_HEIGHT
+    width >= MIN_WIDTH && width <= MAX_WIDTH && height >= MIN_HEIGHT && height <= MAX_HEIGHT
   end
 
 end
