@@ -2,7 +2,7 @@ module DirectoryConcern
 
 	def load_directory_configs
 		handle_exception do
-			@directory_id = directory_is_root?(path) ? user_id : directory_id_from_params(path)
+			@directory_id = directory_is_root? ? user_id : params[:id]
 			directory_meta  = get_directory_meta(user_id, @directory_id)
 
 			json_response({:error => ErrorMessages[:directory_not_present]}, :not_found) and return if directory_meta.blank?
@@ -15,12 +15,8 @@ module DirectoryConcern
 
 	private
 
-	def directory_is_root? path
-		path == ""
-	end
-
-	def directory_id_from_params path
-		path.split('/')[1]
+	def directory_is_root?
+		params[:id] == "me"
 	end
 
 end

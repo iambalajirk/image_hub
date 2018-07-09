@@ -5,7 +5,6 @@ module StorageConcern
 
 	def check_image_presence
 		handle_exception do
-			byebug
 			image_key = image_unique_id(user_id, parent_directory_id, file_name)
 			image_id = generate_hash(image_key)
 
@@ -21,9 +20,9 @@ module StorageConcern
 	def check_directory_presence
 		handle_exception do
 			directory_key = directory_image_id(user_id, directory_id, new_directory_name)
-			directory_id = generate_hash(directory_key)
+			directory_hash = generate_hash(directory_key)
 
-			meta = get_directory_meta(user_id, directory_id)
+			meta = get_directory_meta(user_id, directory_hash)
 
 			json_response({:error => ErrorMessages[:image_exists]}, :conflict) and return if meta.present?
 			true
