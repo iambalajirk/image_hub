@@ -5,6 +5,7 @@ module StorageConcern
 
 	def check_image_presence
 		handle_exception do
+			byebug
 			image_key = image_unique_id(user_id, parent_directory_id, file_name)
 			image_id = generate_hash(image_key)
 

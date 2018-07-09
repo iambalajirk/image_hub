@@ -2,3 +2,4 @@ invalid_image: "Image must be withing the following dimensions 300*300 to 5000*5
 directory_not_present: "Couldn't find the root folder. The root folder has to be present in order to create the image"
 image_exists: "The specified image already exists."
 something_wrong: "Something went wrong"
+invalid_create_image_request: "It should contain a directory id"

@@ -7,5 +7,7 @@ Rails.application.routes.draw do
   resources :directory, :controller => :directory, :except => [:new, :edit] do
   end
 
+  match '/directory/:_directory_id/images' => 'image_hub#create', :via => :post
+
   resources :files, :only => [:destroy, :show]
 end
