@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
 module ImageConcern
-  MIN_WIDTH = 30
-  MIN_HEIGHT = 30
+  MIN_WIDTH = 300
+  MIN_HEIGHT = 300
   MAX_WIDTH = 5000
   MAX_HEIGHT = 5000
 
@@ -20,8 +20,9 @@ module ImageConcern
         json_response({ error: ErrorMessages[:invalid_create_image_request] }, :not_acceptable) && return
       end
 
-      @directory_id = params[:directory_id] == "me" ? user_id : params[:directory_id]
+      @directory_id = params[:directory_id] == 'me' ? user_id : params[:directory_id]
       @width, @height = get_dimensions
+      json_response({ error: ErrorMessages[:unknown_extension] }, :not_acceptable) && return if width.nil? || height.nil?
     end
   end
 
@@ -40,7 +41,7 @@ module ImageConcern
 
       # Raising conflict if there is another image with the same file name.
       # We can handle this differently too. Rename the original file with (1) suffix.
-      json_response({:error => ErrorMessages[:image_exists]}, :conflict) and return if meta.present?
+      json_response({ error: ErrorMessages[:image_exists] }, :conflict) && return if meta.present?
       true
     end
   end
@@ -56,11 +57,17 @@ module ImageConcern
   end
 
   def get_dimensions
-    image[0x10..0x18].unpack('NN')
+    if extension == 'image/png'
+      image[0x10..0x18].unpack('NN')
+    elsif extension == 'image/gif'
+      image[6..10].unpack('SS')
+    elsif extension == 'image/jpeg' # Hack to get JPEG image size for now.
+      base64 = Base64.encode64(image)
+      FastImage.size "data:image/jpeg;base64,#{base64}"
+    end
   end
 
   def valid_image
     width >= MIN_WIDTH && width <= MAX_WIDTH && height >= MIN_HEIGHT && height <= MAX_HEIGHT
   end
-
 end
