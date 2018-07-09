@@ -31,7 +31,6 @@ module FileSystemConcern
 
 	def load_image_meta
 		handle_exception do
-			byebug
 			meta = get_image_meta(user_id, image_id)
 			json_response({error: ErrorMessages[:image_not_present]}) and return if meta.nil?
 
@@ -49,7 +48,7 @@ module FileSystemConcern
 		end
 	end
 
-	def get_all_image_metas_in_directory user_id, directory_id
+	def image_metas_in_directory user_id, directory_id
 		key = image_reference_inside_directory_key_list(user_id, directory_id)
 		image_ids = get_all_from_list(key)
 
@@ -65,7 +64,7 @@ module FileSystemConcern
 		end.compact
 	end
 
-	def get_all_directory_metas_in_directory user_id, directory_id
+	def directory_metas_in_directory user_id, directory_id
 		key = directory_reference_inside_directory_key_list(user_id, directory_id)
 		directory_ids = get_all_from_list(key)
 

@@ -10,9 +10,8 @@ module ImageConcern
   # Here we will check the root folder and the folder in the request is present or not(using directory_path).
   # recursively check for the folders if the end folder exists or not. Throw error if so.
   # The root directory ID will be by default the user_id.
-  def load_image_configs
+  def populate_image_configs
     handle_exception do
-      byebug
       @image = request.raw_post
       @file_name = parse_file_name
       @extension = parse_extension
@@ -29,6 +28,20 @@ module ImageConcern
   def verify_image
     handle_exception do
       json_response({ error: ErrorMessages[:invalid_image] }, :not_acceptable) && return unless valid_image
+    end
+  end
+
+  def check_image_presence
+    handle_exception do
+      image_key = image_unique_id(user_id, directory_id, file_name)
+      @image_id = generate_hash(image_key)
+
+      meta = get_image_meta(user_id, image_id)
+
+      # Raising conflict if there is another image with the same file name.
+      # We can handle this differently too. Rename the original file with (1) suffix.
+      json_response({:error => ErrorMessages[:image_exists]}, :conflict) and return if meta.present?
+      true
     end
   end
 

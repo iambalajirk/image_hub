@@ -1,22 +1,24 @@
 class DirectoryController < ApiApplicationController
 	before_action :load_directory_configs
 	before_action :load_directory_contents, :only => :show
-	before_action :load_new_directory_configs, :check_directory_presence, :only => :create
+	before_action :parse_body, :load_new_directory_configs, :check_directory_presence, :only => :create
 
-	attr_accessor :path, :directory_id, :level, :name, :parent_directory_id, :images, :directories, :new_directory_name
+	attr_accessor :name, :directory_id, :parent_directory_id, :level # Image meta
+	attr_accessor :images, :directories # Directory contents
+	attr_accessor :new_directory_name, :new_directory_id
 
 	include DirectoryConcern
 	include StorageConcern
 	include FileSystemConcern
 
 	def show
-		json_response(show_response_hash, :ok) and return
+		json_response(show_response_hash, :ok) && return
 	end
 
 	def create
 		# Receive the request and create a new virtual sub-directory reference.
 		response = create_directory
-		json_response(response, :created) and return
+		json_response(response, :created) && return
 		rescue => e
 	  	Rails.logger.error "Error while creating a new directory, error :#{e}"
 	  	json_response( {error: 'Something went wrong'}, :internal_server_error)
@@ -38,4 +40,9 @@ class DirectoryController < ApiApplicationController
 			directories: directories
 		}
 	end
+
+	def parse_body
+    @body = JSON.parse(request.raw_post).symbolize_keys
+  end
+
 end

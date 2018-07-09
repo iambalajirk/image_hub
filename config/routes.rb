@@ -10,8 +10,4 @@ Rails.application.routes.draw do
 
   match '/directory/:id/directory' => 'directory#create', :via => :post
 
-  match '/images/' => 'image_hub#test', :via => :post
-
-  match '/test_render/' => 'image_hub#test_render', :via => :get
-
 end

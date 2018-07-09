@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 class ImageHubController < ApiApplicationController
-  before_action :load_image_configs, :verify_image, :check_image_presence, only: :create
+  before_action :populate_image_configs, :verify_image, :check_image_presence, only: :create
   before_action :get_image_id, :load_image_meta, :load_image, :only => :show
 
   attr_accessor :image, :file_name, :extension, :width, :height, :image_id, :directory_id

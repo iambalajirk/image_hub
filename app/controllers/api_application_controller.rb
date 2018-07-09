@@ -4,20 +4,12 @@ class ApiApplicationController < ApplicationController
   skip_before_action :verify_authenticity_token
   before_action :load_user
 
-  attr_accessor :per_page, :page, :user_id
+  attr_accessor :body, :per_page, :page, :user_id
 
   include Response
   include UserConcern
 
   private
-
-  # def parse_body
-  #   @body = JSON.parse(request.raw_post).symbolize_keys
-  # end
-
-  # def parse_api_params
-  # 	@per_page = body[:per_page]
-  # end
 
   def handle_exception(&block)
     begin

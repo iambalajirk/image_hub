@@ -3,36 +3,7 @@
 module StorageConcern
 	include Constant
 
-	def check_image_presence
-		handle_exception do
-			image_key = image_unique_id(user_id, directory_id, file_name)
-			@image_id = generate_hash(image_key)
-
-			meta = get_image_meta(user_id, image_id)
-
-			# Raising conflict if there is another image with the same file name.
-			# We can handle this differently too. Rename the original file with (1) suffix.
-			json_response({:error => ErrorMessages[:image_exists]}, :conflict) and return if meta.present?
-			true
-		end
-	end
-
-	def check_directory_presence
-		handle_exception do
-			directory_key = directory_image_id(user_id, directory_id, new_directory_name)
-			directory_hash = generate_hash(directory_key)
-
-			meta = get_directory_meta(user_id, directory_hash)
-
-			json_response({:error => ErrorMessages[:image_exists]}, :conflict) and return if meta.present?
-			true
-		end
-	end
-
 	def create_directory
-		directory_key = directory_image_id(user_id, directory_id, new_directory_name)
-		new_directory_id = generate_hash(directory_key)
-
 		directory_meta = populate_directory_metadata
 
 		store_directory_meta(user_id, new_directory_id, directory_meta)
@@ -67,10 +38,9 @@ module StorageConcern
 
 	def load_directory_contents
 		handle_exception do
-			@images = get_all_image_metas_in_directory(user_id, directory_id)
-			@directories = get_all_directory_metas_in_directory(user_id, directory_id)
+			@images = image_metas_in_directory(user_id, directory_id)
+			@directories = directory_metas_in_directory(user_id, directory_id)
 		end
-		true
 	end
 
 	private
@@ -87,10 +57,6 @@ module StorageConcern
 		Digest::MD5.hexdigest keys
 	end
 
-	# def file_with_extension file_id, extension
-	# 	"%{file}.%{extension}" % {file: file, extension: extension}
-	# end
-
 	def populate_image_metadata
 		{
 			extension: extension,
@@ -104,8 +70,8 @@ module StorageConcern
 	def populate_directory_metadata 
 		{
 			name: new_directory_name,
-			parent_directory_id: directory_id,
-			level: level + 1
+			level: level + 1,
+			parent_directory_id: directory_id
 		}
 	end
 
