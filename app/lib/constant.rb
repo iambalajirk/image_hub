@@ -6,4 +6,5 @@ module Constant
 	DIRECTORY_URL_PATH_PREFIX = '/directory'.freeze
 	IMAGE_LINK = 'http://localhost:3000/image'.freeze
 	DIRECTORY_LINK = 'http://localhost:3000/directory'.freeze
+	DIRECTORY_META_VERSION = 1
 end

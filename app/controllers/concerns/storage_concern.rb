@@ -65,7 +65,8 @@ module StorageConcern
       name: file_name,
       width: width,
       height: height,
-      directory_id: directory_id
+      directory_id: directory_id,
+      version: DIRECTORY_META_VERSION,
     }
   end
 

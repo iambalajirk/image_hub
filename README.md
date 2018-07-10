@@ -1,29 +1,19 @@
-# README
+# IMAGE HUB
+Backend API server for a platform for users to upload and view images.
 
-This README would normally document whatever steps are necessary to get the
-application up and running.
+### Dependencies
+* Rails version: 5 or above.
+* Ruby version: 3.2 and above.
+* Need to have redis installed.
 
-Things you may want to cover:
+Start the redis server
+> redis-server
 
-* Ruby version
-5 and above.
+Start the rails server <br>
+> bundle install && rails s
 
-* Ruby version
-3.2 and above.
-
-* System dependencies
-Need to have redis and memcached installed.
-
-* Configuration
-
-* Database creation
-
-* Database initialization
-
-* How to run the test suite
-
-* Services (job queues, cache servers, search engines, etc.)
-
-* Deployment instructions
-
-* ...
+### API
+Start hitting the localhost API's. Use this [document](https://paper.dropbox.com/doc/Image-Hub-acLA6QM8rSKxClCvdGeVB#:uid=048111515052061594061819&h2=API-Schema) as reference for the APIs.
+[Workflow](https://paper.dropbox.com/doc/Image-Hub-acLA6QM8rSKxClCvdGeVB#:uid=943311250246298261332243&h2=Workflow)
+[File & directory Organization](https://paper.dropbox.com/doc/Image-Hub-acLA6QM8rSKxClCvdGeVB#:uid=668924578316839532876438&h2=File-Organization)
+[Metadata info](https://paper.dropbox.com/doc/Image-Hub-acLA6QM8rSKxClCvdGeVB#:uid=372950368516147324788196&h2=Metadata)

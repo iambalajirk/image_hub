@@ -13,6 +13,3 @@ key = directory_metadata_key(Constant::SAMPLE_USER_ID, Constant::SAMPLE_USER_ID)
 
 response = set_value(key, meta.to_json)
 p "redis response #{response}"
-
-
-# EVAL "return redis.call('del', unpack(redis.call('keys', ARGV[1])))" 0 IMAGE_HUB:*
